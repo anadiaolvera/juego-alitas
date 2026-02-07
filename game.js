@@ -97,7 +97,7 @@ let finalShown = false;
 
 /* BOOST ARCADE */
 let tick = 0;   // animación
-let wobble = 0; // temblor al acertar
+let wobble = 8; // temblor al acertar
 
 /* ========= UTIL ========= */
 function clamp(v, min, max){ return Math.max(min, Math.min(max, v)); }
@@ -229,7 +229,7 @@ function drawScene(){
     const x = (i*37 + tick*2) % W;
     const y = (i*61 + Math.sin((tick+i)*0.03)*6) % (H*0.55);
     const a = 0.06 + (i%7)*0.012 + (tw*0.01);
-    ctx.fillStyle = `rgba(255,255,255,${a})`;
+    ctx.fillStyle = `rgba(255,255,255,${0.06 + (i%7)*0.012 + (tw*0.01)})`;
     ctx.fillRect(x, y, 2, 2);
   }
 
