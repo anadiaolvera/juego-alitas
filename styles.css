@@ -398,6 +398,67 @@ h1{
   image-rendering: pixelated;
   box-shadow: 0 10px 18px rgba(0,0,0,.25);
 }
+/* ===== BOOST ARCADE (más vida) ===== */
+:root{
+  --neon1:#7c3aed;   /* morado */
+  --neon2:#22d3ee;   /* cyan */
+  --neon3:#f97316;   /* naranja */
+  --neon4:#34d399;   /* verde */
+}
+
+/* brillo general */
+.pixel-card{
+  box-shadow:
+    0 16px 0 rgba(0,0,0,.30),
+    0 26px 70px rgba(0,0,0,.35),
+    0 0 0 2px rgba(255,255,255,.05),
+    0 0 30px rgba(34,211,238,.10);
+}
+
+/* header más vibrante */
+.topbar{
+  background: radial-gradient(900px 300px at 20% 0%, rgba(124,58,237,.25), transparent 60%),
+              radial-gradient(700px 300px at 80% 0%, rgba(34,211,238,.22), transparent 60%),
+              linear-gradient(180deg, #141f38, #0f1627);
+}
+
+/* botones con glow */
+.btn{
+  position: relative;
+}
+.btn:hover{
+  border-color: rgba(34,211,238,.35);
+  box-shadow: 0 0 0 4px rgba(34,211,238,.10), 0 14px 30px rgba(0,0,0,.35);
+}
+.btn.primary{
+  background: linear-gradient(135deg, var(--pink), var(--yellow));
+  color: #0b0f1a;
+  font-weight: 900;
+  box-shadow: 0 0 0 4px rgba(255,183,3,.10), 0 18px 38px rgba(0,0,0,.35);
+}
+.btn.primary:hover{
+  box-shadow: 0 0 0 4px rgba(255,183,3,.18), 0 0 26px rgba(255,77,141,.20);
+}
+
+/* badge más “arcade” */
+.badge{
+  box-shadow: 0 0 18px rgba(255,77,141,.25);
+}
+
+/* toast con brillo */
+.toast{
+  background: radial-gradient(300px 100px at 20% 0%, rgba(34,211,238,.16), transparent 60%),
+              rgba(0,0,0,.18);
+}
+
+/* animación sutil para el fondo */
+.bg{
+  animation: bgFloat 10s ease-in-out infinite;
+}
+@keyframes bgFloat{
+  0%,100%{ transform: translateY(0px); filter: saturate(1); }
+  50%{ transform: translateY(-10px); filter: saturate(1.15); }
+}
 
 /* ========= RESPONSIVO TELÉFONO ========= */
 

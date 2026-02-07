@@ -1,34 +1,34 @@
 /* ============================
    CAMINO A LA ALITA BBQ (PIXEL)
    Quiz + Mini-juego + Final Sorpresa
+   + BOOST ARCADE (más vida/animación)
    HTML/CSS/JS sin librerías
    ============================ */
 
 /* ========= PERSONALIZA AQUÍ ========= */
 const CONFIG = {
-  nombreYo: "Anadia ",
-  nombreTu: "Mi amor",
-  emojiYo: "🧑‍💻",
-  emojiTu: "👩‍🦰",
+  nombreYo: "Anadia",
+  nombreTu: "Marvin",
+  emojiYo: "👩‍🦰",
+  emojiTu: "🧑",
   metaEmoji: "🍗",
 
-  totalSteps: 8,        // pasos para llegar a la meta
-  miniEvery: 3,         // cada cuántas preguntas sale mini-juego
-  miniSeconds: 10,      // duración mini-juego
-  miniGoal: 3,          // cuántos corazones atrapar
+  totalSteps: 8,
+  miniEvery: 3,
+  miniSeconds: 10,
+  miniGoal: 3,
 
-  secretCode: "ALITAS2026", // <-- CAMBIA EL CÓDIGO
-  secretMessage:
-`Mi amor 💖
+  secretCode: "ALITAS2023",
+  secretMessage: `Mi amor 💖
 
 Gracias por existir en mi vida.
-Esta alita BBQ es solo el pretexto…
+Esta alita es solo el pretexto…
 la verdadera recompensa eres tú.
 
-Te amo 🥹🍗✨`
+Te amo 🥹🍗✨`,
 };
 
-// Edita preguntas (correct = índice 0..3)
+/* Edita preguntas (correct = índice 0..3) */
 const QUESTIONS = [
   { q: "¿Dónde fue nuestra primera salida (oficial)?", a: ["En el mall", "En un café", "En el parque", "En la playa"], correct: 1 },
   { q: "¿Cuál es nuestra comida más de 'plan perfecto'?", a: ["Encebollado", "Alitas BBQ", "Sushi", "Pizza"], correct: 1 },
@@ -50,12 +50,12 @@ const elToastText = document.getElementById("toastText");
 const btnNext = document.getElementById("btnNext");
 const btnRestart = document.getElementById("btnRestart");
 
-// Overlay mini-juego
+/* Overlay mini-juego */
 const overlay = document.getElementById("overlay");
 const btnCloseMini = document.getElementById("btnCloseMini");
 const elTimer = document.getElementById("timer");
 
-// Overlay final
+/* Overlay final */
 const finalOverlay = document.getElementById("finalOverlay");
 const finalTitle = document.getElementById("finalTitle");
 const finalSubtitle = document.getElementById("finalSubtitle");
@@ -67,33 +67,37 @@ const secretText = document.getElementById("secretText");
 const btnCloseFinal = document.getElementById("btnCloseFinal");
 const btnPlayAgain = document.getElementById("btnPlayAgain");
 
-// Canvas principal
+/* Canvas principal */
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-// Canvas mini
+/* Canvas mini */
 const miniCanvas = document.getElementById("mini");
 const mctx = miniCanvas.getContext("2d");
 
 /* ========= ESTADO ========= */
-let idx = 0;           // pregunta actual
-let answered = false;  // ya respondió
-let score = 0;         // corazones
-let streak = 0;        // racha correctas
-let step = 0;          // avance meta
+let idx = 0;
+let answered = false;
+let score = 0;
+let streak = 0;
+let step = 0;
 
 let lastChoice = -1;
 
-// mini-juego
+/* mini-juego */
 let miniActive = false;
 let miniCaught = 0;
 let miniTime = CONFIG.miniSeconds;
 let miniTimer = null;
 let spawnTimer = null;
-let hearts = []; // {x,y,alive,born}
+let hearts = [];
 
-// final
+/* final */
 let finalShown = false;
+
+/* BOOST ARCADE */
+let tick = 0;   // animación
+let wobble = 0; // temblor al acertar
 
 /* ========= UTIL ========= */
 function clamp(v, min, max){ return Math.max(min, Math.min(max, v)); }
@@ -194,21 +198,38 @@ function pxText(text, x, y, color="#f4f6ff", size=14, align="left"){
   ctx.fillText(text, x, y);
 }
 
+/* ===== drawScene MEJORADO (más vida + parpadeo + bob + wobble) ===== */
 function drawScene(){
   const W = canvas.width;
   const H = canvas.height;
 
+  tick++;
+  const tw = Math.sin(tick * 0.08);
+
+  ctx.save();
+
+  if(wobble > 0){
+    const s = wobble * 0.6;
+    ctx.translate(rand(-s, s), rand(-s, s));
+    wobble = Math.max(0, wobble - 1);
+  }
+
   ctx.clearRect(0,0,W,H);
 
-  // fondo
-  ctx.fillStyle = "#0b0f1a";
+  // fondo más colorido (degradado)
+  const g = ctx.createLinearGradient(0,0,W,H);
+  g.addColorStop(0, "#0b0f1a");
+  g.addColorStop(0.5, "#160b2a");
+  g.addColorStop(1, "#0b1a2a");
+  ctx.fillStyle = g;
   ctx.fillRect(0,0,W,H);
 
-  // estrellitas
-  for(let i=0;i<50;i++){
-    const x = (i*37) % W;
-    const y = (i*61) % (H*0.55);
-    ctx.fillStyle = `rgba(255,255,255,${0.08 + (i%7)*0.01})`;
+  // estrellitas con parpadeo + movimiento suave
+  for(let i=0;i<60;i++){
+    const x = (i*37 + tick*2) % W;
+    const y = (i*61 + Math.sin((tick+i)*0.03)*6) % (H*0.55);
+    const a = 0.06 + (i%7)*0.012 + (tw*0.01);
+    ctx.fillStyle = `rgba(255,255,255,${a})`;
     ctx.fillRect(x, y, 2, 2);
   }
 
@@ -216,9 +237,13 @@ function drawScene(){
   ctx.fillStyle = "#0f1627";
   ctx.fillRect(0, H*0.58, W, H*0.42);
 
+  // luces neón en el suelo
+  ctx.fillStyle = "rgba(34,211,238,.10)";
+  ctx.fillRect(0, H*0.58, W, 6);
+
   // camino
   const pathY = Math.floor(H*0.70);
-  ctx.fillStyle = "rgba(255,255,255,.08)";
+  ctx.fillStyle = "rgba(255,255,255,.10)";
   ctx.fillRect(Math.floor(W*0.08), pathY, Math.floor(W*0.84), 10);
 
   // pasos
@@ -229,48 +254,63 @@ function drawScene(){
   for(let i=0;i<=CONFIG.totalSteps;i++){
     const x = startX + Math.floor((span * i) / CONFIG.totalSteps);
     const active = i <= step;
-    ctx.fillStyle = active ? "#ff4d8d" : "rgba(255,255,255,.14)";
+
+    ctx.fillStyle = active ? "#ff4d8d" : "rgba(255,255,255,.18)";
     ctx.fillRect(x-4, pathY-12, 8, 8);
-    ctx.fillStyle = active ? "rgba(255,183,3,.55)" : "rgba(255,255,255,.10)";
+
+    ctx.fillStyle = active ? "rgba(255,183,3,.65)" : "rgba(255,255,255,.12)";
     ctx.fillRect(x-2, pathY-10, 4, 4);
+
+    if(active){
+      ctx.fillStyle = "rgba(255,77,141,.18)";
+      ctx.fillRect(x-8, pathY-16, 16, 16);
+    }
   }
 
   // meta
   const goalX = endX - 18;
   const goalY = pathY - 72;
-  pxRect(goalX-22, goalY-6, 72, 72, "rgba(255,183,3,.14)", "rgba(255,255,255,.12)");
-  pxText(CONFIG.metaEmoji, goalX+6, goalY+12, "#fff", 28, "left");
-  pxText("META", goalX+14, goalY+48, "rgba(255,255,255,.65)", 10, "left");
 
-  // personajes (posición por step)
+  pxRect(goalX-22, goalY-6, 72, 72, "rgba(255,183,3,.18)", "rgba(255,255,255,.14)");
+  pxText(CONFIG.metaEmoji, goalX+6, goalY+12, "#fff", 28, "left");
+  pxText("META", goalX+14, goalY+48, "rgba(255,255,255,.70)", 10, "left");
+
+  // brillo meta
+  ctx.fillStyle = "rgba(255,183,3,.10)";
+  ctx.fillRect(goalX-30, goalY-14, 90, 90);
+
+  // personajes
   const t = step / CONFIG.totalSteps;
+  const bob = Math.sin(tick*0.12) * 2;
   const charX = startX + Math.floor(span * t);
-  const charY = pathY - 86;
+  const charY = Math.floor(pathY - 86 + bob);
 
   // sombra
-  ctx.fillStyle = "rgba(0,0,0,.35)";
+  ctx.fillStyle = "rgba(0,0,0,.38)";
   ctx.fillRect(charX-18, pathY-2, 40, 8);
 
   // cajas
-  pxRect(charX-28, charY, 44, 44, "rgba(255,255,255,.10)", "rgba(255,255,255,.14)");
-  pxRect(charX+18, charY, 44, 44, "rgba(255,255,255,.10)", "rgba(255,255,255,.14)");
+  pxRect(charX-28, charY, 44, 44, "rgba(255,255,255,.12)", "rgba(255,255,255,.16)");
+  pxRect(charX+18, charY, 44, 44, "rgba(255,255,255,.12)", "rgba(255,255,255,.16)");
 
   // emojis
   pxText(CONFIG.emojiYo, charX-16, charY+10, "#fff", 20, "left");
   pxText(CONFIG.emojiTu, charX+30, charY+10, "#fff", 20, "left");
 
   // nombres
-  pxText(CONFIG.nombreYo.toUpperCase(), charX-30, charY+48, "rgba(255,255,255,.70)", 8, "left");
-  pxText(CONFIG.nombreTu.toUpperCase(), charX+16, charY+48, "rgba(255,255,255,.70)", 8, "left");
+  pxText(CONFIG.nombreYo.toUpperCase(), charX-30, charY+48, "rgba(255,255,255,.75)", 8, "left");
+  pxText(CONFIG.nombreTu.toUpperCase(), charX+16, charY+48, "rgba(255,255,255,.75)", 8, "left");
 
-  // mensaje dentro del canvas si llegó
+  // mensaje si llegó
   if(step >= CONFIG.totalSteps){
     pxRect(Math.floor(W*0.14), Math.floor(H*0.16), Math.floor(W*0.72), Math.floor(H*0.26),
-      "rgba(0,0,0,.35)", "rgba(255,255,255,.14)");
+      "rgba(0,0,0,.38)", "rgba(255,255,255,.14)");
     pxText("¡LO LOGRAMOS!", Math.floor(W*0.50), Math.floor(H*0.20), "#ffb703", 16, "center");
     pxText("ALITAS BBQ + ABRAZOS", Math.floor(W*0.50), Math.floor(H*0.26), "#f4f6ff", 10, "center");
-    pxText("❤️ Sorpresa desbloqueable arriba", Math.floor(W*0.50), Math.floor(H*0.32), "rgba(255,255,255,.70)", 8, "center");
+    pxText("❤️ Desbloquea la sorpresa arriba", Math.floor(W*0.50), Math.floor(H*0.32), "rgba(255,255,255,.75)", 8, "center");
   }
+
+  ctx.restore();
 }
 
 /* ========= QUIZ ========= */
@@ -337,7 +377,6 @@ function chooseAnswer(i, btn){
   lockAnswers();
   highlightAnswers(q.correct);
 
-  // partículas desde botón
   const r = btn.getBoundingClientRect();
   pixelBurst(r.left + r.width/2, r.top + r.height/2, ok ? "rgba(64,247,183,.9)" : "rgba(255,95,109,.9)");
 
@@ -345,6 +384,8 @@ function chooseAnswer(i, btn){
     score += 1;
     streak += 1;
     if(step < CONFIG.totalSteps) step += 1;
+
+    wobble = 8; // BOOST: temblor al acertar
 
     setToast("good", "¡Correcto! Avanzan juntitos 💘");
     pixelBurst(window.innerWidth*0.5, window.innerHeight*0.35, "rgba(255,183,3,.9)");
@@ -360,7 +401,6 @@ function chooseAnswer(i, btn){
 
   btnNext.disabled = false;
 
-  // si llegaron a la meta, mostrar final (una sola vez)
   if(step >= CONFIG.totalSteps && !finalShown){
     finalShown = true;
     setTimeout(() => showFinal("meta"), 450);
@@ -376,7 +416,6 @@ function next(){
   if(nextIndex < QUESTIONS.length){
     idx = nextIndex;
 
-    // mini juego cada N preguntas
     if(idx % CONFIG.miniEvery === 0 && step < CONFIG.totalSteps){
       openMiniGame();
       return;
@@ -401,6 +440,7 @@ function restart(){
   streak = 0;
   step = 0;
   finalShown = false;
+  wobble = 0;
 
   closeMiniGame(true);
   hideFinal(true);
@@ -475,24 +515,32 @@ function drawMini(){
 
   mctx.clearRect(0,0,W,H);
 
-  mctx.fillStyle = "#0b0f1a";
+  // fondo más vivo
+  const g = mctx.createLinearGradient(0,0,W,H);
+  g.addColorStop(0, "#0b0f1a");
+  g.addColorStop(1, "#1a0b24");
+  mctx.fillStyle = g;
   mctx.fillRect(0,0,W,H);
 
-  mctx.fillStyle = "rgba(255,255,255,.04)";
+  // cuadricula
+  mctx.fillStyle = "rgba(255,255,255,.05)";
   for(let x=0; x<W; x+=16) mctx.fillRect(x, 0, 1, H);
   for(let y=0; y<H; y+=16) mctx.fillRect(0, y, W, 1);
 
-  mctx.fillStyle = "rgba(255,255,255,.75)";
+  // texto
+  mctx.fillStyle = "rgba(255,255,255,.80)";
   mctx.font = `10px "Press Start 2P", ui-monospace, monospace`;
   mctx.fillText("ATRAPA LOS CORAZONES", 16, 14);
 
+  // corazones
   hearts.forEach(h => {
     if(!h.alive) return;
     mctx.font = `22px "Press Start 2P", ui-monospace, monospace`;
     mctx.fillText("💖", h.x - 10, h.y - 12);
   });
 
-  mctx.strokeStyle = "rgba(255,255,255,.12)";
+  // marco
+  mctx.strokeStyle = "rgba(255,255,255,.14)";
   mctx.lineWidth = 4;
   mctx.strokeRect(2,2,W-4,H-4);
 }
@@ -535,12 +583,13 @@ function endMiniGame(success){
     step = clamp(step + 2, 0, CONFIG.totalSteps);
     score += 2;
 
+    wobble = 10; // pequeño festejo
+
     setToast("good", "¡Reto logrado! Bonus +2 pasos 😈💖");
     elScore.textContent = score;
     elProgress.textContent = `${Math.round((step / CONFIG.totalSteps) * 100)}%`;
     drawScene();
 
-    // si con el bonus llegó a la meta, mostrar final
     if(step >= CONFIG.totalSteps && !finalShown){
       finalShown = true;
       setTimeout(() => showFinal("meta"), 450);
@@ -573,10 +622,10 @@ function showFinal(reason="meta"){
   secretMsg.style.display = "none";
   secretText.textContent = "";
 
-  pixelConfetti(120);
+  pixelConfetti(150);
 }
 
-function hideFinal(silent=false){
+function hideFinal(){
   finalOverlay.style.display = "none";
   finalOverlay.setAttribute("aria-hidden", "true");
 }
@@ -591,7 +640,7 @@ function tryUnlock(){
     secretMsg.style.display = "block";
     secretText.textContent = CONFIG.secretMessage;
 
-    pixelConfetti(180);
+    pixelConfetti(200);
     setToast("good", "¡Sorpresa desbloqueada! 💖");
   }else{
     setToast("bad", "Código incorrecto 😅 Pista: algo de ustedes + números...");
@@ -600,41 +649,15 @@ function tryUnlock(){
 }
 
 /* ========= EVENTOS ========= */
-btnNext.addEventListener("pointerup", (e) => {
-  e.preventDefault();
-  next();
-});
+btnNext.addEventListener("pointerup", (e) => { e.preventDefault(); next(); });
+btnRestart.addEventListener("pointerup", (e) => { e.preventDefault(); restart(); });
+btnCloseMini.addEventListener("pointerup", (e) => { e.preventDefault(); endMiniGame(false); });
 
-btnRestart.addEventListener("pointerup", (e) => {
-  e.preventDefault();
-  restart();
-});
+btnUnlock.addEventListener("pointerup", (e) => { e.preventDefault(); tryUnlock(); });
+secretInput.addEventListener("keydown", (e) => { if(e.key === "Enter") tryUnlock(); });
 
-btnCloseMini.addEventListener("pointerup", (e) => {
-  e.preventDefault();
-  endMiniGame(false);
-});
-
-// final eventos
-btnUnlock.addEventListener("pointerup", (e) => {
-  e.preventDefault();
-  tryUnlock();
-});
-
-secretInput.addEventListener("keydown", (e) => {
-  if(e.key === "Enter") tryUnlock();
-});
-
-btnCloseFinal.addEventListener("pointerup", (e) => {
-  e.preventDefault();
-  hideFinal();
-});
-
-btnPlayAgain.addEventListener("pointerup", (e) => {
-  e.preventDefault();
-  hideFinal();
-  restart();
-});
+btnCloseFinal.addEventListener("pointerup", (e) => { e.preventDefault(); hideFinal(); });
+btnPlayAgain.addEventListener("pointerup", (e) => { e.preventDefault(); hideFinal(); restart(); });
 
 /* ========= RESPONSIVO ========= */
 window.addEventListener("resize", () => {
