@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <!-- Codificación -->
+  <meta charset="utf-8" />
+
+  <!-- Viewport RESPONSIVO (clave para teléfonos) -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
+  <!-- Título -->
+  <title>Camino a la Alita BBQ — Pixel Game 💘🍗</title>
+
+  <!-- Descripción -->
+  <meta name="description" content="Videojuego pixel romántico con preguntas personalizadas y mini retos divertidos." />
+
+  <!-- Color de barra en móviles -->
+  <meta name="theme-color" content="#0b0f1a" />
+
+  <!-- CSS externo -->
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- Fuente pixel ligera (opcional; si no quieres internet, bórrala) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+  <!-- Icono pestaña -->
+  <link rel="icon" href="data:,">
+</head>
+
+<body>
+  <div class="bg"></div>
+
+  <main class="wrap">
+    <header class="topbar pixel-card">
+      <div class="brand">
+        <div class="badge">8-BIT</div>
+        <div>
+          <h1>Camino a la Alita BBQ</h1>
+          <p class="sub">Responde preguntas de ustedes y lleguen juntitos 🍗</p>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><span>❤️</span> <b id="scoreLbl">0</b></div>
+        <div class="stat"><span>🧭</span> <b id="progressLbl">0%</b></div>
+      </div>
+    </header>
+
+    <section class="grid">
+      <!-- MAPA / ESCENA -->
+      <section class="pixel-card scene">
+        <div class="scene-head">
+          <div class="mini">🎮 Mapa</div>
+          <div class="mini" id="qCount">Pregunta 1</div>
+          <div class="mini" id="streak">Racha: 0</div>
+        </div>
+
+        <div class="canvas-wrap">
+          <canvas id="game" width="760" height="320" aria-label="Mapa pixel"></canvas>
+        </div>
+
+        <div class="scene-foot">
+          <div class="tip"><b>Tip:</b> Si te equivocas no pasa nada, seguimos ✨</div>
+          <button class="btn ghost" id="btnRestart" type="button">Reiniciar</button>
+        </div>
+      </section>
+
+      <!-- QUIZ -->
+      <section class="pixel-card quiz">
+        <h2 class="title">💬 Preguntas de nosotros</h2>
+        <p class="question" id="question">Cargando…</p>
+
+        <div class="answers" id="answers"></div>
+
+        <div class="toast" id="toast">
+          <span class="lamp"></span>
+          <div id="toastText">Elige una opción para avanzar.</div>
+        </div>
+
+        <div class="actions">
+          <button class="btn primary" id="btnNext" type="button" disabled>Siguiente</button>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <!-- MINI-JUEGO (overlay) -->
+  <div class="overlay" id="overlay" aria-hidden="true">
+    <div class="pixel-card modal">
+      <div class="modal-head">
+        <h3>Reto Flash (10s): atrapa 3 corazones 💖</h3>
+        <p>Haz clic/toca los corazones. Si logras 3, avanzan 2 pasos 😈🍗</p>
+      </div>
+
+      <div class="canvas-wrap mini-wrap">
+        <canvas id="mini" width="520" height="260"></canvas>
+      </div>
+
+      <div class="modal-foot">
+        <div class="mini" id="timer">Tiempo: 10s • 0/3</div>
+        <button class="btn primary" id="btnCloseMini" type="button">Listo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANTALLA FINAL (overlay) -->
+  <div class="overlay" id="finalOverlay" aria-hidden="true">
+    <div class="pixel-card modal">
+      <div class="modal-head">
+        <h3 id="finalTitle">¡Nivel completado! 💘</h3>
+        <p id="finalSubtitle">Llegaron juntitos a la meta… ahora viene la sorpresa 😈🍗</p>
+      </div>
+
+      <div class="finalBox">
+        <div class="finalRow">
+          <div class="mini">🏁 Meta</div>
+          <div class="mini" id="finalStats">❤️ 0 • 🧭 0%</div>
+        </div>
+
+        <div class="secretArea">
+          <p class="secretHint">
+            🔐 <b>Sorpresa desbloqueable:</b> ingresa el <u>código secreto</u>
+          </p>
+
+          <div class="secretControls">
+            <input id="secretInput" class="secretInput" placeholder="Código (ej: ALITAS2026)" autocomplete="off" />
+            <button class="btn primary" id="btnUnlock" type="button">Desbloquear</button>
+          </div>
+
+          <div class="secretMsg pixel-card" id="secretMsg" style="display:none;">
+            <p id="secretText" class="secretText"></p>
+          </div>
+
+          <div class="finalActions">
+            <button class="btn ghost" id="btnCloseFinal" type="button">Cerrar</button>
+            <button class="btn primary" id="btnPlayAgain" type="button">Jugar otra vez</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
