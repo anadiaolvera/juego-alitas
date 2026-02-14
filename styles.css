@@ -459,6 +459,29 @@ h1{
   0%,100%{ transform: translateY(0px); filter: saturate(1); }
   50%{ transform: translateY(-10px); filter: saturate(1.15); }
 }
+/* ===== PUZZLE ===== */
+.puzzleBoard{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  margin-top: 8px;
+}
+#puzzleCanvas{
+  width: min(86vw, 420px);
+  height: auto;
+  border-radius: 10px;
+  border: var(--px) solid rgba(255,255,255,.14);
+  background: rgba(0,0,0,.18);
+  image-rendering: pixelated;
+  touch-action: manipulation;
+}
+.puzzleActions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  justify-content:space-between;
+  margin-top: 8px;
+}
 
 /* ========= RESPONSIVO TELÉFONO ========= */
 

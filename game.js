@@ -18,6 +18,9 @@ const CONFIG = {
   miniSeconds: 10,
   miniGoal: 3,
 
+  puzzleImage: "foto.jpeg",   // o "foto.png"
+  puzzleSize: 4,             // 3 = 3x3 (liviano y fácil)
+
   secretCode: "ALITAS2023",
   secretMessage: `Mi amor 💖
 
@@ -74,6 +77,14 @@ const ctx = canvas.getContext("2d");
 /* Canvas mini */
 const miniCanvas = document.getElementById("mini");
 const mctx = miniCanvas.getContext("2d");
+// Puzzle
+const puzzleWrap = document.getElementById("puzzleWrap");
+const puzzleCanvas = document.getElementById("puzzleCanvas");
+const pctx = puzzleCanvas.getContext("2d");
+const btnPuzzleShuffle = document.getElementById("btnPuzzleShuffle");
+const btnPuzzleHint = document.getElementById("btnPuzzleHint");
+const puzzleDone = document.getElementById("puzzleDone");
+
 
 /* ========= ESTADO ========= */
 let idx = 0;
@@ -642,11 +653,172 @@ function tryUnlock(){
 
     pixelConfetti(200);
     setToast("good", "¡Sorpresa desbloqueada! 💖");
+        // mostrar puzzle cuando desbloquea código
+    initPuzzle();
+
   }else{
     setToast("bad", "Código incorrecto 😅 Pista: algo de ustedes + números...");
     pixelConfetti(35, true);
   }
 }
+/* ========= PUZZLE (rompecabezas) ========= */
+let pImg = null;
+let pN = 3;
+let tiles = [];
+let sel = -1;
+let showHint = false;
+
+function initPuzzle(){
+  puzzleDone.style.display = "none";
+  puzzleWrap.style.display = "block";
+
+  pN = clamp(CONFIG.puzzleSize || 3, 2, 5);
+  pImg = new Image();
+  pImg.src = CONFIG.puzzleImage || "foto.jpg";
+  pImg.onload = () => {
+    buildTiles();
+    shuffleTiles();
+    drawPuzzle();
+  };
+  pImg.onerror = () => {
+    // Si no carga la imagen
+    pctx.clearRect(0,0,puzzleCanvas.width,puzzleCanvas.height);
+    pctx.fillStyle = "rgba(255,255,255,.85)";
+    pctx.font = `10px "Press Start 2P", ui-monospace, monospace`;
+    pctx.fillText("No se pudo cargar foto.jpg", 18, 30);
+  };
+}
+
+function buildTiles(){
+  const total = pN * pN;
+  tiles = Array.from({length: total}, (_,i)=> i); // estado resuelto
+  sel = -1;
+  showHint = false;
+}
+
+function shuffleTiles(){
+  // mezcla asegurando que no quede resuelto
+  for(let i=0;i<200;i++){
+    const a = Math.floor(Math.random()*tiles.length);
+    const b = Math.floor(Math.random()*tiles.length);
+    [tiles[a], tiles[b]] = [tiles[b], tiles[a]];
+  }
+  if(isSolved()){
+    // si por suerte quedó resuelto, mezcla un poco más
+    for(let i=0;i<40;i++){
+      const a = Math.floor(Math.random()*tiles.length);
+      const b = Math.floor(Math.random()*tiles.length);
+      [tiles[a], tiles[b]] = [tiles[b], tiles[a]];
+    }
+  }
+  sel = -1;
+  puzzleDone.style.display = "none";
+}
+
+function isSolved(){
+  for(let i=0;i<tiles.length;i++){
+    if(tiles[i] !== i) return false;
+  }
+  return true;
+}
+
+function drawPuzzle(){
+  const W = puzzleCanvas.width;
+  const H = puzzleCanvas.height;
+  pctx.clearRect(0,0,W,H);
+
+  // fondo
+  pctx.fillStyle = "rgba(0,0,0,.25)";
+  pctx.fillRect(0,0,W,H);
+
+  if(!pImg) return;
+
+  const tileW = Math.floor(W / pN);
+  const tileH = Math.floor(H / pN);
+
+  // “hint” (ver foto completa tenue)
+  if(showHint){
+    pctx.globalAlpha = 0.25;
+    pctx.drawImage(pImg, 0,0,W,H);
+    pctx.globalAlpha = 1;
+  }
+
+  for(let pos=0; pos<tiles.length; pos++){
+    const id = tiles[pos];
+
+    const sx = (id % pN) * (pImg.width / pN);
+    const sy = Math.floor(id / pN) * (pImg.height / pN);
+    const sw = (pImg.width / pN);
+    const sh = (pImg.height / pN);
+
+    const dx = (pos % pN) * tileW;
+    const dy = Math.floor(pos / pN) * tileH;
+
+    pctx.drawImage(pImg, sx, sy, sw, sh, dx, dy, tileW, tileH);
+
+    // bordes tipo pixel
+    pctx.strokeStyle = "rgba(255,255,255,.18)";
+    pctx.lineWidth = 4;
+    pctx.strokeRect(dx+2, dy+2, tileW-4, tileH-4);
+
+    // selección
+    if(pos === sel){
+      pctx.strokeStyle = "rgba(34,211,238,.55)";
+      pctx.lineWidth = 6;
+      pctx.strokeRect(dx+4, dy+4, tileW-8, tileH-8);
+    }
+  }
+
+  // texto arriba
+  pctx.fillStyle = "rgba(255,255,255,.85)";
+  pctx.font = `10px "Press Start 2P", ui-monospace, monospace`;
+  pctx.fillText("TOCA 2 PIEZAS PARA CAMBIAR", 14, 14);
+}
+
+function puzzlePosFromEvent(ev){
+  const rect = puzzleCanvas.getBoundingClientRect();
+  const x = (ev.clientX - rect.left) * (puzzleCanvas.width / rect.width);
+  const y = (ev.clientY - rect.top) * (puzzleCanvas.height / rect.height);
+
+  const tileW = puzzleCanvas.width / pN;
+  const tileH = puzzleCanvas.height / pN;
+
+  const col = clamp(Math.floor(x / tileW), 0, pN-1);
+  const row = clamp(Math.floor(y / tileH), 0, pN-1);
+  return row * pN + col;
+}
+
+function onPuzzleTap(ev){
+  if(!pImg) return;
+
+  const pos = puzzlePosFromEvent(ev);
+
+  if(sel === -1){
+    sel = pos;
+    sfxClick?.();
+    drawPuzzle();
+    return;
+  }
+
+  if(sel === pos){
+    sel = -1;
+    drawPuzzle();
+    return;
+  }
+
+  // intercambiar
+  [tiles[sel], tiles[pos]] = [tiles[pos], tiles[sel]];
+  sel = -1;
+
+  drawPuzzle();
+
+  if(isSolved()){
+    puzzleDone.style.display = "block";
+    pixelConfetti(180);
+    sfxWin?.();
+  }
+}
+
 
 /* ========= EVENTOS ========= */
 btnNext.addEventListener("pointerup", (e) => { e.preventDefault(); next(); });
@@ -658,6 +830,15 @@ secretInput.addEventListener("keydown", (e) => { if(e.key === "Enter") tryUnlock
 
 btnCloseFinal.addEventListener("pointerup", (e) => { e.preventDefault(); hideFinal(); });
 btnPlayAgain.addEventListener("pointerup", (e) => { e.preventDefault(); hideFinal(); restart(); });
+
+puzzleCanvas.addEventListener("pointerup", (e)=>{ e.preventDefault(); onPuzzleTap(e); });
+btnPuzzleShuffle.addEventListener("pointerup", (e)=>{ e.preventDefault(); shuffleTiles(); drawPuzzle(); });
+btnPuzzleHint.addEventListener("pointerup", (e)=>{
+  e.preventDefault();
+  showHint = !showHint;
+  btnPuzzleHint.textContent = showHint ? "Quitar ayudita" : "Ayudita";
+  drawPuzzle();
+});
 
 /* ========= RESPONSIVO ========= */
 window.addEventListener("resize", () => {

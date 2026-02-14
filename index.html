@@ -131,6 +131,23 @@
           <div class="secretMsg pixel-card" id="secretMsg" style="display:none;">
             <p id="secretText" class="secretText"></p>
           </div>
+          
+          <div class="puzzleWrap" id="puzzleWrap" style="display:none;">
+            <p class="secretHint">🧩 <b>Rompecabezas final:</b> arma nuestra foto para desbloquear el “Final romántico” 💘</p>
+
+            <div class="puzzleBoard">
+              <canvas id="puzzleCanvas" width="420" height="420"></canvas>
+            </div>
+
+            <div class="puzzleActions">
+              <button class="btn ghost" id="btnPuzzleShuffle" type="button">Mezclar</button>
+              <button class="btn primary" id="btnPuzzleHint" type="button">Ayudita</button>
+            </div>
+
+            <div class="secretMsg pixel-card" id="puzzleDone" style="display:none;">
+              <p class="secretText">✅ ¡LO LOGRASTE! Ahora sí… premio final 😈🍗💖</p>
+            </div>
+          </div>
 
           <div class="finalActions">
             <button class="btn ghost" id="btnCloseFinal" type="button">Cerrar</button>
