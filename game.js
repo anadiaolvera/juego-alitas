@@ -33,11 +33,11 @@ Te amo 🥹🍗✨`,
 
 /* Edita preguntas (correct = índice 0..3) */
 const QUESTIONS = [
-  { q: "¿Dónde fue nuestra primera salida (oficial)?", a: ["En el mall", "En un café", "En el parque", "En la playa"], correct: 1 },
-  { q: "¿Cuál es nuestra comida más de 'plan perfecto'?", a: ["Encebollado", "Alitas BBQ", "Sushi", "Pizza"], correct: 1 },
-  { q: "¿Qué canción nos pone en modo 'nosotros'?", a: ["Canción A", "Canción B", "Canción C", "Canción D"], correct: 2 },
-  { q: "¿Qué apodo cariñoso usamos más?", a: ["Cielo", "Bebé", "Amor", "Todos 😅"], correct: 3 },
-  { q: "Si salimos hoy, tú prefieres…", a: ["Película", "Caminar", "Comer algo rico", "Las 3"], correct: 3 },
+  { q: "¿Dónde fue nuestra primera salida?", a: ["En el cine", "En empachaditos", "En las alitas", "En cheleros"], correct: 3 },
+  { q: "¿Cuál es nuestra comida más de 'plan perfecto'?", a: ["Hamburguesas", "Alitas", "Papas", "Pizza"], correct: 1 },
+  { q: "¿Qué canción nos pone en modo 'nosotros'?", a: ["Buscandote", "La travesia", "Tengo tu love", "Persona favorita"], correct: 0 },
+  { q: "¿cuál es mi flor favorito?", a: ["Girasol", "Tulipan", "petunias", "Rosas"], correct: 3 },
+  { q: "¿Cuál es mi color favorito?", a: ["Rojo", "Blanco", "Verde", "Azul"], correct: 3 },
   { q: "¿Cuál es mi detalle favorito de ti?", a: ["Tu risa", "Tu apoyo", "Tu forma de querer", "Todo"], correct: 3 },
 ];
 
